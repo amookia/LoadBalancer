@@ -16,6 +16,7 @@ type service struct {
 
 type Handler interface {
 	BalancerHandler(http.ResponseWriter, *http.Request)
+	ErrorHandler(http.ResponseWriter, *http.Request)
 }
 
 func NewHandler(nodes []*url.URL, logger *zap.SugaredLogger) Handler {
@@ -30,14 +31,21 @@ func (h service) BalancerHandler(w http.ResponseWriter, r *http.Request) {
 	r.Host = h.nodes[rand].Host
 	r.URL.Host = h.nodes[rand].Host
 	r.URL.Scheme = h.nodes[rand].Scheme
-	h.logger.Infof("request proxied to : %s from : %s", r.Host, r.RemoteAddr)
 	r.RequestURI = ""
 	response, err := http.DefaultClient.Do(r)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		h.logger.Errorln("BalanceHandler", err.Error())
+		// handling errors
+		// passing request to ErrorHandler
+		h.ErrorHandler(w, r)
 		return
 	}
+	h.logger.Infof("request proxied to : %s from : %s", r.Host, r.RemoteAddr)
 	w.WriteHeader(response.StatusCode)
 	io.Copy(w, response.Body)
+}
+
+// Just handling 500 error
+func (h service) ErrorHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(500)
+	io.WriteString(w, "<b>Error : 500</b>")
 }
