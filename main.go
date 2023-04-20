@@ -1,28 +1,30 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 
 	"github.com/amookia/loadbalancer/conf"
 	"github.com/amookia/loadbalancer/internal/handler"
+	"github.com/amookia/loadbalancer/pkg/logger"
 )
 
 func main() {
-	config := conf.Init()
-	var nodes []*url.URL
-	for _, j := range config.Nodes {
-		node, err := url.Parse(j)
-		if err != nil {
-			log.Fatalln(err)
-		}
-		nodes = append(nodes, node)
+	config, nodes := conf.Init()
+	logger, err := logger.New("LoadBalancer")
+	if err != nil {
+		log.Fatal(err.Error())
 	}
-
-	handler := handler.NewHandler(nodes)
+	handler := handler.NewHandler(nodes, logger)
 	proxy := http.HandlerFunc(handler.BalancerHandler)
 
-	http.ListenAndServe(":8081", proxy)
-
+	logger.Infof("service started at port : %s", config.Listen)
+	err = http.ListenAndServe(
+		fmt.Sprintf(":%s", config.Listen), // listen
+		proxy,                             // handler
+	)
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
 }

@@ -2,23 +2,26 @@ package handler
 
 import (
 	"io"
-	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
+
+	"go.uber.org/zap"
 )
 
 type service struct {
-	nodes []*url.URL
+	nodes  []*url.URL
+	logger *zap.SugaredLogger
 }
 
 type Handler interface {
 	BalancerHandler(http.ResponseWriter, *http.Request)
 }
 
-func NewHandler(nodes []*url.URL) Handler {
+func NewHandler(nodes []*url.URL, logger *zap.SugaredLogger) Handler {
 	return &service{
-		nodes: nodes,
+		nodes:  nodes,
+		logger: logger,
 	}
 }
 
@@ -27,11 +30,12 @@ func (h service) BalancerHandler(w http.ResponseWriter, r *http.Request) {
 	r.Host = h.nodes[rand].Host
 	r.URL.Host = h.nodes[rand].Host
 	r.URL.Scheme = h.nodes[rand].Scheme
+	h.logger.Infof("request proxied to : %s from : %s", r.Host, r.RemoteAddr)
 	r.RequestURI = ""
 	response, err := http.DefaultClient.Do(r)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		log.Println(err)
+		h.logger.Errorln("BalanceHandler", err.Error())
 		return
 	}
 	w.WriteHeader(response.StatusCode)
