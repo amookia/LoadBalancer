@@ -1,33 +1,43 @@
 package conf
 
 import (
+	"fmt"
 	"log"
 	"net/url"
 	"os"
 
-	"github.com/BurntSushi/toml"
+	"gopkg.in/yaml.v3"
 )
 
+type Hosts struct {
+	Host string
+	Port string
+}
 type Config struct {
-	Listen string   `toml:"listen"`
-	Nodes  []string `toml:"nodes"`
+	Listen  string
+	Service string
+	Hosts   []Hosts
 }
 
 type Nodes []*url.URL
 
 func Init() (Config, Nodes) {
-	file, err := os.ReadFile("config.toml")
+	file, err := os.ReadFile("config.yaml")
 	if err != nil {
 		log.Fatal(err)
 	}
+	// implement config
 	var conf Config
-	toml.Unmarshal(file, &conf)
+	err = yaml.Unmarshal(file, &conf)
+	if err != nil {
+		panic(err)
+	}
+	// implement nodes
 	var nodes []*url.URL
-	for _, j := range conf.Nodes {
-		node, err := url.Parse(j)
-		if err != nil {
-			log.Fatalln(err)
-		}
+	for _, h := range conf.Hosts {
+		node, _ := url.Parse(
+			fmt.Sprintf("http://%s:%s", h.Host, h.Port),
+		)
 		nodes = append(nodes, node)
 	}
 	return conf, nodes

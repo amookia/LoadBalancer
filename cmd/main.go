@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/amookia/loadbalancer/conf"
@@ -12,13 +11,14 @@ import (
 
 func main() {
 	config, nodes := conf.Init()
-	logger, err := logger.New("LoadBalancer")
+	logger, err := logger.New(config.Service)
 	if err != nil {
-		log.Fatal(err.Error())
+		logger.Fatal(err.Error())
 	}
+	// register handlers
 	handler := handler.NewHandler(nodes, logger)
 	proxy := http.HandlerFunc(handler.BalancerHandler)
-
+	// listening
 	logger.Infof("service started at port : %s", config.Listen)
 	err = http.ListenAndServe(
 		fmt.Sprintf(":%s", config.Listen), // listen
