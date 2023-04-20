@@ -9,14 +9,15 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type Hosts struct {
+type Base struct {
 	Host string
 	Port string
 }
+
 type Config struct {
-	Listen  string
+	Listen  Base
 	Service string
-	Hosts   []Hosts
+	Hosts   []Base
 }
 
 type Nodes []*url.URL

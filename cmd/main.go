@@ -20,9 +20,11 @@ func main() {
 	proxy := http.HandlerFunc(handler.BalancerHandler)
 	// listening
 	logger.Infof("service started at port : %s", config.Listen)
-	err = http.ListenAndServe(
-		fmt.Sprintf(":%s", config.Listen), // listen
-		proxy,                             // handler
+	err = http.ListenAndServe( // listen
+		fmt.Sprintf("%s:%s",
+			config.Listen.Host,  // host
+			config.Listen.Port), // port
+		proxy, // handler
 	)
 	if err != nil {
 		logger.Fatal(err.Error())
