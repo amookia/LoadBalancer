@@ -2,10 +2,10 @@ package handler
 
 import (
 	"io"
-	"math/rand"
 	"net/http"
 	"net/url"
 
+	"github.com/amookia/loadbalancer/internal/balancer"
 	"go.uber.org/zap"
 )
 
@@ -27,12 +27,8 @@ func NewHandler(nodes []*url.URL, logger *zap.SugaredLogger) Handler {
 }
 
 func (h service) BalancerHandler(w http.ResponseWriter, r *http.Request) {
-	rand := rand.Intn(2)
-	r.Host = h.nodes[rand].Host
-	r.URL.Host = h.nodes[rand].Host
-	r.URL.Scheme = h.nodes[rand].Scheme
-	r.RequestURI = ""
-	response, err := http.DefaultClient.Do(r)
+	b := balancer.Balancer{Nodes: h.nodes, Total: len(h.nodes)}
+	response, err := b.PickNode(r)
 	if err != nil {
 		// handling errors
 		// passing request to ErrorHandler
