@@ -19,9 +19,9 @@ create-network:
 
 #build all
 build:
-	create-network
-	build-balancer
-	build-nodes
+	make create-network
+	make build-balancer
+	make build-nodes
 
 #----------------------------------------------
 #remove
@@ -38,10 +38,10 @@ remove-nodes-image:
 	docker rmi -f node-python-image
 
 remove:
-	remove-balancer
-	remove-nodes
-	remove-balancer-image
-	remove-nodes-image
+	make remove-balancer
+	make remove-nodes
+	make remove-balancer-image
+	make remove-nodes-image
 #---------------------------------------------
 #run
 run-nodes:
@@ -59,8 +59,8 @@ run-balancer:
 		-p8087:8087 balancer-image 
 
 run:
-	run-nodes
-	run-balancer
+	make run-nodes
+	make run-balancer
 #---------------------------------------------
 
 	
