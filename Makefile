@@ -19,6 +19,9 @@ remove-containers:
 	docker rm -f node1-container
 	docker rm -f node2-container
 
+remove-images:
+	docker rmi -f balancer-image node-python-image
+
 create-network:
 	docker network create balancer-network
 
