@@ -27,9 +27,9 @@ func main() {
 		Addr: fmt.Sprintf("%s:%s",
 			config.Listen.Host,  // host
 			config.Listen.Port), // port
-		WriteTimeout: 1 * time.Second, // write timeout
-		ReadTimeout:  1 * time.Second, // read timeout
-		Handler:      http.TimeoutHandler(proxy, 1*time.Second, "<b>500</b>\n"),
+		WriteTimeout: 15 * time.Second, // write timeout
+		ReadTimeout:  15 * time.Second, // read timeout
+		Handler:      http.TimeoutHandler(proxy, 5*time.Second, "<b>500</b>\n"),
 	}
 	err = srv.ListenAndServe()
 	if err != nil {

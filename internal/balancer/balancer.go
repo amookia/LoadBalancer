@@ -21,8 +21,11 @@ func (b Balancer) PickNode(r *http.Request) (*http.Response, error) {
 	r.URL.Scheme = b.Nodes[rand].Scheme
 	r.RequestURI = ""
 	response, err := http.DefaultClient.Do(r)
-	for err != nil {
+	// counting error connections
+	count := 0
+	for err != nil || count <= 3 {
 		response, err = b.PickNode(r)
+		count++
 	}
 	return response, err
 }
