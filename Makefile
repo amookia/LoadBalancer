@@ -58,6 +58,12 @@ run-balancer:
 		--name balancer-container \
 		-p8087:8087 balancer-image 
 
+restart-balancer:
+	make remove-balancer-image
+	make remove-balancer
+	make 
+	make run-balancer
+
 run:
 	make run-nodes
 	make run-balancer
